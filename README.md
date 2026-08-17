@@ -122,6 +122,9 @@ reach it.
 Eight factory presets, from *Speaker Beside It* through *Mains Hum* to *Degauss
 on the Bar*.
 
+<!-- downloads:start -->
+<!-- downloads:end -->
+
 ## Building
 
 ```bash
@@ -137,6 +140,7 @@ The OpenFX bundle is built alongside as `build/Regauss.ofx.bundle`; copy it into
 
 See [`CLAUDE.md`](CLAUDE.md) for the full command reference and
 [`AGENTS.md`](AGENTS.md) for the mental model and the traps.
+First run on macOS or Windows: [`docs/UNSIGNED.md`](docs/UNSIGNED.md).
 
 ## Status
 
