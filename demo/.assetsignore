@@ -1,0 +1,4 @@
+# Not served: this generates demo/shaders.js from source/shaders/ and is a
+# build input, not part of the page. Without this it is uploaded as a public
+# asset alongside the demo.
+extract-shaders.mjs
