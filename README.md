@@ -14,6 +14,8 @@ Electromagnetic interference on a CRT, and the coil that clears it, as an FFGL
 effect for [Resolume](https://resolume.com) Arena and Avenue — and the same
 thing again as an OpenFX plugin for Resolve, Nuke, Natron and Vegas.
 
+**Video:** [What it does, in 40 seconds](https://www.youtube.com/watch?v=p3-tEdHAAlc)
+
 ![A CRT mid-degauss: the picture swollen and dimmed, the raster skewed, colours rotated off their phosphors](docs/hero.png)
 
 <sub>Half a second into a degauss. The coil has pulled the HT down, so the
