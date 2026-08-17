@@ -6,9 +6,11 @@
 > headless GL context: the GLSL field is compared against the C++ field it is
 > supposed to mirror, the purity model is checked for identity at rest and a
 > clean rotation at one phosphor, and the degauss coil is checked to actually
-> demagnetise the mask and let it recover (see [Status](#status)). It has
-> **never been loaded into Resolume or Resolve** — only compiled, rendered and
-> measured offline. Check it in your own rig before trusting it in a show.
+> demagnetise the mask and let it recover (see [Status](#status)). It **has been
+> loaded into Resolume Arena** and renders there, and the Degauss button fires
+> once per press as intended — but it has **never been run in a live show**, and
+> the OpenFX build has never been loaded into Resolve. Check it in your own rig
+> before trusting it in front of an audience.
 
 Electromagnetic interference on a CRT, and the coil that clears it, as an FFGL
 effect for [Resolume](https://resolume.com) Arena and Avenue — and the same
@@ -196,13 +198,20 @@ Run `tools/verify.sh`. What it establishes:
   the injected bass, the four bands read different levels from it, and the coil
   re-arms and fires per kick rather than once.
 
-**What is not established:** it has never been loaded into Resolume or Resolve.
-The OpenFX bundle loads and renders under `ofxprobe`, which is not Resolve. The
-Degauss button assumes Resolume draws an `FF_TYPE_EVENT` as a button and sends
-one rising edge per press; Beat and Bar assume a real transport. The audio path
-has only ever seen `rgtest`'s synthetic spectrum, never Resolume's FFT. The
-macOS build is universal and verified with `lipo`; nothing has been built on
-Windows or Linux.
+**Confirmed in the host:** it loads into Resolume Arena and renders, and the
+Degauss button behaves — Resolume draws the `FF_TYPE_EVENT` as a button and
+sends one rising edge per press, so the coil fires once per click rather than
+twice or continuously.
+
+**What is still not established:** Beat and Bar assume Resolume's transport,
+and that has not been checked against real music. The audio path has only ever
+seen `rgtest`'s synthetic spectrum, never Resolume's own FFT, so the bin count
+and whether the magnitudes need the sqrt are taken from the fleet's other
+plugins rather than measured here. Whether Resolume redraws the sliders when a
+preset is picked is unknown. It has not been run in a live show. The OpenFX
+bundle loads and renders under `ofxprobe`, which is not Resolve. The macOS
+build is universal and verified with `lipo`; nothing has been built on Windows
+or Linux.
 
 ## Licence
 

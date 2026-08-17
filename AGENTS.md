@@ -196,21 +196,31 @@ the stain the right size over somebody else's CRT.
 - The bundle exports `plugMain` and carries `RG01`; the OFX bundle's plist names
   its real binary and ad-hoc signs.
 
+**Verified in Resolume Arena** (Allan's own report, 2026-08-17 — so it comes
+from running the host, not from a harness):
+
+- It loads and renders. The bundle instantiates, appears in the effects list and
+  puts a picture on a layer, which retires the whole class of worry about
+  `SetTextParameter`, the OBJECT-library registration and the param
+  declarations: any of those wrong and there would be no effect to load.
+- **The Degauss button fires once per press.** Resolume draws the
+  `FF_TYPE_EVENT` as a button and delivers one rising edge, so the edge-triggered
+  coil in `SetFloatParameter` sees exactly one firing per click rather than a
+  stream or a double.
+
 **Assumed, and not yet checked:**
 
-- **It has never been loaded into Resolume or Resolve.** Everything above is
-  offline. The OpenFX bundle has been loaded and rendered through by `ofxprobe`,
-  which is not Resolve.
-- Whether Resolume draws `FF_TYPE_EVENT` as a button the way the Degauss control
-  assumes, and whether a MIDI or OSC mapping to it produces one rising edge per
-  press rather than a stream.
+- **It has never been run in a live show**, and the OpenFX build has never been
+  loaded into Resolve. `ofxprobe` loads and renders it, which is not Resolve.
 - Whether Resolume's FFT arrives in the shape the reader assumes. The audio path
   has only ever seen `rgtest`'s synthetic spectrum: the bin count, the
   normalisation and whether the magnitudes need the sqrt are all taken from the
   fleet's other plugins rather than measured here.
 - Whether Beat and Bar lock to a real Resolume transport. The recovery of the
   bar line from `barPhase` is the same arithmetic tinsel and orrery use and that
-  *has* been checked live in Arena — but not in this plugin.
+  *has* been checked live in Arena — but not in this plugin. Note that the
+  button working does NOT cover this: the manual press and the Auto schedule
+  reach `manualTrigger` by different routes.
 - Whether Resolume consumes the `FF_EVENT_FLAG_VALUE` events the preset applier
   raises, so the sliders visibly move when a preset is picked.
 - Nothing has been built on Windows or Linux. The macOS build IS universal and
