@@ -41,6 +41,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <map>
@@ -54,7 +55,7 @@ namespace
 // A PNG writer. zlib ships with the OS, so this is a few chunk headers and a
 // CRC rather than a dependency.
 //---------------------------------------------------------------------------
-void putU32( std::vector< unsigned char >& out, uint32_t value )
+void putU32( std::vector< unsigned char >& out, std::uint32_t value )
 {
 	out.push_back( static_cast< unsigned char >( value >> 24 ) );
 	out.push_back( static_cast< unsigned char >( value >> 16 ) );
@@ -64,13 +65,13 @@ void putU32( std::vector< unsigned char >& out, uint32_t value )
 
 void putChunk( std::vector< unsigned char >& out, const char* type, const std::vector< unsigned char >& data )
 {
-	putU32( out, static_cast< uint32_t >( data.size() ) );
+	putU32( out, static_cast< std::uint32_t >( data.size() ) );
 	const size_t start = out.size();
 	out.insert( out.end(), type, type + 4 );
 	out.insert( out.end(), data.begin(), data.end() );
 	uLong crc = crc32( 0L, Z_NULL, 0 );
 	crc = crc32( crc, out.data() + start, static_cast< uInt >( 4 + data.size() ) );
-	putU32( out, static_cast< uint32_t >( crc ) );
+	putU32( out, static_cast< std::uint32_t >( crc ) );
 }
 
 bool writePng( const std::string& path, int width, int height, const std::vector< unsigned char >& rgba )
@@ -93,8 +94,8 @@ bool writePng( const std::string& path, int width, int height, const std::vector
 	std::vector< unsigned char > png = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
 
 	std::vector< unsigned char > ihdr;
-	putU32( ihdr, static_cast< uint32_t >( width ) );
-	putU32( ihdr, static_cast< uint32_t >( height ) );
+	putU32( ihdr, static_cast< std::uint32_t >( width ) );
+	putU32( ihdr, static_cast< std::uint32_t >( height ) );
 	ihdr.push_back( 8 );//bit depth
 	ihdr.push_back( 6 );//truecolour with alpha
 	ihdr.push_back( 0 );

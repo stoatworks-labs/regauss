@@ -1,6 +1,12 @@
 #include "Field.h"
 
 #include <cmath>
+// <cstdint> and the std:: qualification are both load-bearing on MSVC. libc++
+// drags the fixed-width types in through <cmath> and the unqualified names into
+// the global namespace, so a bare std::uint32_t builds on macOS and fails on Windows
+// with "syntax error: missing ';'" pointing at the line AFTER the offending
+// one. Caught by dispatching the release workflow before tagging.
+#include <cstdint>
 
 namespace regauss
 {
@@ -12,20 +18,20 @@ namespace
 /// pole positions in the plugin, in the OpenFX build and in the browser demo,
 /// and the trigonometric hash is the one construct whose answer genuinely
 /// differs between an ARM CPU, an Intel CPU and three GPU vendors.
-uint32_t pcg( uint32_t v )
+std::uint32_t pcg( std::uint32_t v )
 {
-	const uint32_t state = v * 747796405u + 2891336453u;
-	const uint32_t word  = ( ( state >> ( ( state >> 28u ) + 4u ) ) ^ state ) * 277803737u;
+	const std::uint32_t state = v * 747796405u + 2891336453u;
+	const std::uint32_t word  = ( ( state >> ( ( state >> 28u ) + 4u ) ) ^ state ) * 277803737u;
 	return ( word >> 22u ) ^ word;
 }
 
-float hash01( uint32_t v )
+float hash01( std::uint32_t v )
 {
 	return static_cast< float >( pcg( v ) ) * ( 1.0f / 4294967296.0f );
 }
 
 /// Signed, centred on zero.
-float hash11( uint32_t v )
+float hash11( std::uint32_t v )
 {
 	return hash01( v ) * 2.0f - 1.0f;
 }
@@ -136,8 +142,8 @@ PoleSet poles( int layout, float seed, float wander, float time, float aspect )
 	// looks like itself at every seed -- the operator picked "speaker on the
 	// left" and is entitled to keep it.
 	//------------------------------------------------------------------
-	const uint32_t base = static_cast< uint32_t >( seed * 4096.0f ) * 2654435761u
-	                      + static_cast< uint32_t >( layout ) * 40503u;
+	const std::uint32_t base = static_cast< std::uint32_t >( seed * 4096.0f ) * 2654435761u
+	                      + static_cast< std::uint32_t >( layout ) * 40503u;
 
 	//Wandering orbits an order of magnitude wider than the others: there the
 	//drift is the whole point, elsewhere it is a magnet somebody keeps
@@ -146,7 +152,7 @@ PoleSet poles( int layout, float seed, float wander, float time, float aspect )
 
 	for( int i = 0; i < kPoleCount; ++i )
 	{
-		const uint32_t h = base + static_cast< uint32_t >( i ) * 0x9E3779B9u;
+		const std::uint32_t h = base + static_cast< std::uint32_t >( i ) * 0x9E3779B9u;
 
 		set.p[ i ].x += hash11( h ) * 0.18f;
 		set.p[ i ].y += hash11( h + 1u ) * 0.18f;
