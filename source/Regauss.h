@@ -116,6 +116,15 @@ private:
 		PT_ZOOM,
 		PT_VIGNETTE,
 
+		//Audio. FFGL only -- OFX hosts deliver no spectrum, so the OpenFX
+		//build simply never fills these in and the term falls out of drive().
+		PT_AUDIO_FFT,
+		PT_AUDIO_DRIVE,
+		PT_AUDIO_BAND,
+		PT_AUDIO_RELEASE,
+		PT_AUDIO_TRIGGER,
+		PT_AUDIO_THRESHOLD,
+
 		//Preset. Declared after the real controls so their IDs -- which a
 		//saved composition refers to -- do not shift under existing users.
 		PT_PRESET,
@@ -138,6 +147,22 @@ private:
 	};
 
 	void applyPreset( int presetIndex );
+
+	/// Read the host's spectrum and fold it down to one number.
+	///
+	/// **This is the speaker's own field.** The plugin's default layout is an
+	/// unshielded speaker beside the set, and a speaker's stray field is not
+	/// *like* the audio signal -- it IS the audio signal, because the voice
+	/// coil current is the music and the magnet assembly leaks it. So the
+	/// audio does not drive a new effect here; it drives the field that was
+	/// already there, and everything downstream of the field follows on its
+	/// own. Which is also why Band is worded as which driver in the cabinet:
+	/// a woofer leaks the bass, a tweeter the treble.
+	void updateAudio( double now );
+
+	/// Number of FFT bins the host is asked for. The fleet's figure, and what
+	/// Resolume delivers.
+	static constexpr int kAudioBins = 64;
 
 	bool compileShaders();
 	void releaseBuffers();
@@ -192,6 +217,16 @@ private:
 
 	/// Set by the Degauss button, on the rising edge only.
 	double manualTrigger = -1.0;
+
+	//--- audio -------------------------------------------------------------
+	/// Per-bin smoothed magnitudes: instant attack, exponential release.
+	float audioBins[ kAudioBins ] = {};
+	/// The band-selected level the field is actually driven by.
+	float audioLevel = 0.0f;
+	/// Previous frame's level, for the rising-edge test on the coil trigger.
+	float audioPrevious = 0.0f;
+	double audioClock = -1.0;
+	double lastAudioTrigger = -1.0;
 
 	float params[ PT_COUNT ];
 

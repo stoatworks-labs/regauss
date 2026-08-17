@@ -104,6 +104,17 @@ float Recovery( float p );
 /// overscans by a few per cent so the blanking edges hide behind the bezel.
 float Overscan( float p );
 
+/// Seconds for the audio-driven field to fall back after a peak.
+float AudioRelease( float p );
+
+/// Field per unit of audio, at Audio Drive = 1.
+///
+/// One, so that a full-scale signal at full drive is worth the same as
+/// Magnetisation at maximum. The two are the same quantity arriving by
+/// different routes -- what the mask is holding, and what the speaker is
+/// putting out this instant.
+inline constexpr float kAudioScale = 1.0f;
+
 //---------------------------------------------------------------------------
 /// The 0..1 controls that feed the field and the beam. Named rather than an
 /// array so that the OpenFX build, which has its own parameter handles and its
@@ -129,6 +140,15 @@ struct Settings
 
 	float maskPitch   = 0.0f;
 	int maskPattern   = 0;
+
+	/// The speaker's own field, this instant.
+	///
+	/// Already band-selected and smoothed by the caller -- `drive()` is a pure
+	/// function and the smoothing is a filter with memory, so it cannot live
+	/// here. Zero by default, which is what makes the OpenFX build's ignorance
+	/// of audio cost nothing: it never sets these, and the term falls out.
+	float audioLevel = 0.0f;
+	float audioDrive = 0.0f;
 };
 
 /// Everything the beam pass needs, worked out once per frame on the CPU.

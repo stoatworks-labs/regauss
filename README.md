@@ -59,6 +59,34 @@ tool and not a filter.
 It can also fire itself: on an **interval**, or on the **beat** or the **bar** of
 Resolume's transport.
 
+## Audio
+
+The default layout is *Speaker Left* — an unshielded speaker beside the set.
+A speaker's stray field is not *like* the audio signal; it **is** the audio
+signal, because the voice coil current is the music and the magnet assembly
+leaks it.
+
+So the audio does not drive a new effect. It drives the field that was already
+there, and everything downstream of the field — the lean, the fringing, the
+colour stain — follows on its own. **Band** is worded as which driver in the
+cabinet is leaking, because that is what it is: a woofer leaks the bass, a
+tweeter the treble.
+
+| Control | |
+| --- | --- |
+| **Audio Drive** | How much the signal adds to the field. Zero by default, so nothing twitches until audio is routed. |
+| **Band** | Full Range, Woofer, Mid, Tweeter. |
+| **Release** | How fast the field falls back after a peak. Instant attack, 20 ms to 1.5 s release. |
+| **Trigger Coil** | Fire the degauss on a transient, with a **Threshold**. |
+
+One consequence worth knowing, and it is the physics rather than a limitation:
+**degaussing does not stop the audio stain.** The coil clears what the mask has
+*stored*; it does nothing about the speaker still sitting there playing the
+record. Degauss during a loud passage and the stain comes straight back.
+
+FFGL only — an OFX host delivers no spectrum, so the OpenFX build simply does
+not offer the group.
+
 ## Stacking on old-cathode
 
 Set **Render** to *Interference Only* and (re)gauss applies the magnet and the
@@ -81,6 +109,7 @@ whatever tube is underneath.
 | **Degauss** | The button, the Auto schedule, and what the coil does: Duration, Intensity, Coil Sag, Recovery. |
 | **Tube** | Mask Pattern and Pitch, Scanlines, Line Count, Beam Bloom, Persistence, Halation, Brightness, Contrast. |
 | **Geometry** | Curvature, Corner Radius, Perspective, Zoom, Vignette. |
+| **Audio** | Audio Drive, Band, Release, and an optional coil trigger. See [Audio](#audio). |
 
 **Deflection and Purity are separate on purpose.** On a real tube, how far a
 field bends the beam is set by the yoke and the anode voltage; how much colour
@@ -124,13 +153,17 @@ Run `tools/verify.sh`. What it establishes:
   the stated Duration, decreases monotonically throughout, and lets the HT
   recover faster than the field. The whole loop runs: magnetisation 1.0 → 0.09 at
   0.77 s after the button → back to 1.0 over the Recovery time.
-- All 35 parameters change the picture.
+- All 40 parameters change the picture.
 - Each mask gain is within 0.4% of the unmasked reference.
+- The audio path carries a synthetic spectrum end to end: the field pumps with
+  the injected bass, the four bands read different levels from it, and the coil
+  re-arms and fires per kick rather than once.
 
 **What is not established:** it has never been loaded into Resolume or Resolve.
 The OpenFX bundle loads and renders under `ofxprobe`, which is not Resolve. The
 Degauss button assumes Resolume draws an `FF_TYPE_EVENT` as a button and sends
-one rising edge per press; Beat and Bar assume a real transport. Only arm64 has
+one rising edge per press; Beat and Bar assume a real transport. The audio path
+has only ever seen `rgtest`'s synthetic spectrum, never Resolume's FFT. Only arm64 has
 been built — not the universal binary, not Windows, not Linux.
 
 ## Licence

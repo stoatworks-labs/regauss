@@ -60,42 +60,71 @@ BASE = {
 FRAMES, FPS = 100, 60
 
 # Parameters that need the world arranged differently before they can be seen
-# at all. The value is (extra settings, frames, fps).
+# at all. Keys: "set" (extra overrides), "frames", "fps", "audio".
+#
+# The Audio group gets its own context rather than a line in BASE on purpose.
+# A synthetic spectrum in the baseline would put a large, fast-moving field
+# behind every other parameter's comparison, and this test only ever asks
+# "did the picture change" — so noise in the baseline cannot produce a false
+# failure, it can only hide a genuinely dead control behind a picture that was
+# moving anyway. Off by default, on where it is the subject.
 CONTEXT = {
     # Recovery only means anything once a transient is OVER, so: one manual
     # firing at t=0, and a capture five seconds later. At 0.2 s the mask has
     # taken all its magnetisation back; at 60 s it is still clean.
-    "Recovery": ({"Auto": 0, "Degauss": 1}, 100, 20),
+    "Recovery": {"set": {"Auto": 0, "Degauss": 1}, "frames": 100, "fps": 20},
 
     # The poles drift slowly on purpose -- rates are around a tenth of a hertz
     # so the loop is not findable by eye. Over 1.7 s they barely move, so this
     # one needs a longer look.
-    "Wander": ({}, 120, 8),
+    "Wander": {"frames": 120, "fps": 8},
 
     # An event, not a value. Sweeping it from 0 to 1 IS the press, and it has
     # to be judged against a baseline where the coil is not already firing for
     # its own reasons.
-    "Degauss": ({"Auto": 0}, 30, 60),
+    "Degauss": {"set": {"Auto": 0}, "frames": 30},
 
     # Frequency is the rate of the alternating field, so it needs the field to
     # be alternating and the coil to be quiet enough not to swamp it.
-    "Frequency": ({"Auto": 0, "Interference": 0.6}, 40, 60),
+    "Frequency": {"set": {"Auto": 0, "Interference": 0.6}, "frames": 40},
 
     # Interference likewise: with the coil firing on an interval its own field
     # is several times larger and the comparison is against noise.
-    "Interference": ({"Auto": 0}, 40, 60),
+    "Interference": {"set": {"Auto": 0}, "frames": 40},
+
+    # ---- Audio ----------------------------------------------------------
+    #
+    # All of these are dead without a spectrum, and correctly so: the host is
+    # the only thing that ever supplies one. `--audio` injects a synthetic one
+    # -- shaped differently per band, or Band would read as dead because the
+    # mean of three ranges of a flat spectrum is the same number three times.
+    "Audio Drive": {"set": {"Auto": 0}, "audio": 0.8, "frames": 40},
+    "Band": {"set": {"Auto": 0, "Audio Drive": 1.0}, "audio": 0.8, "frames": 40},
+    # The synthetic kick is on a half-second grid, so the release needs a
+    # couple of seconds to show the difference between 20 ms and 1.5 s.
+    "Release": {"set": {"Auto": 0, "Audio Drive": 1.0}, "audio": 0.8, "frames": 90},
+    # Threshold 0.7 sits between the synthetic signal's inter-kick floor
+    # (about 0.44 once smoothed) and its peak (1.0). At 0.4 it is under the
+    # floor, the level never falls back below the line, and the coil fires
+    # once for the whole run -- which made this row and Threshold's produce
+    # byte-identical diffs, the symptom that found it.
+    "Trigger Coil": {"set": {"Auto": 0, "Audio Drive": 0.3, "Threshold": 0.7}, "audio": 0.9, "frames": 60},
+    "Threshold": {"set": {"Auto": 0, "Audio Drive": 0.3, "Trigger Coil": 1}, "audio": 0.9, "frames": 60},
 }
 
 # Options are discrete; sweep them across their real element range.
 DISCRETE = {
     "Render": (0, 1), "Layout": (0, 4), "Auto": (0, 3), "Mask Pattern": (1, 4),
     "Preset": (0, 8), "Degauss": (0, 1),
+    "Band": (0, 3), "Trigger Coil": (0, 1),
 }
 
 
-def render(path, overrides, frames, fps):
+def render(path, overrides, frames, fps, audio=None):
     args = [BIN, "--out", path, "--width", str(WIDTH), "--height", str(HEIGHT),
             "--frames", str(frames), "--fps", str(fps)]
+    if audio is not None:
+        args += ["--audio", str(audio)]
     merged = dict(BASE)
     merged.update(overrides)
     for k, v in merged.items():
@@ -146,14 +175,23 @@ params = [" ".join(l.split()[1:-1]) for l in listing.strip().splitlines()]
 if "About" in params:
     params = params[:params.index("About")]
 
+# The FFT buffer parameter has no float value worth sweeping -- it is 64
+# elements the host writes, and the single float the harness would set is
+# meaningless. Sweeping it reports a false dead every time.
+params = [p for p in params if p != "Audio"]
+
 print(f"{'parameter':<20} {'pixels changed':>15} {'mean delta':>11}   verdict")
 dead = []
 for p in params:
     lo, hi = DISCRETE.get(p, (0.0, 1.0))
-    extra, frames, fps = CONTEXT.get(p, ({}, FRAMES, FPS))
+    ctx = CONTEXT.get(p, {})
+    extra = ctx.get("set", {})
+    frames = ctx.get("frames", FRAMES)
+    fps = ctx.get("fps", FPS)
+    audio = ctx.get("audio")
 
-    a = render(f"{SC}/a.png", {**extra, p: lo}, frames, fps)
-    b = render(f"{SC}/b.png", {**extra, p: hi}, frames, fps)
+    a = render(f"{SC}/a.png", {**extra, p: lo}, frames, fps, audio)
+    b = render(f"{SC}/b.png", {**extra, p: hi}, frames, fps, audio)
     pct, mean = diff(a, b)
     ok = pct > 0.5
     if not ok:

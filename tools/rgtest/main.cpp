@@ -729,6 +729,56 @@ bool readExactly( void* into, size_t bytes )
 	return true;
 }
 
+/**
+    A synthetic spectrum, so the Audio controls have something to be a property
+    of offline.
+
+    **Shaped, and shaped differently in each band.** A flat spectrum would make
+    Band read as dead, because the mean of three ranges of a flat spectrum is
+    the same number three times — and it would read as dead correctly, which is
+    the worst kind of test failure to debug. So: a pink-ish tilt with the bass
+    loudest, a kick on a half-second grid confined to the woofer's bins, and a
+    steady hiss in the top ones. Between them those exercise the attack, the
+    release, all four bands and the transient trigger.
+
+    `SetParamElementValue` is the same public entry point the host uses to
+    deliver `FF_SET_PARAMETER_ELEMENT_VALUE`, so the plugin cannot tell this
+    from a real spectrum.
+*/
+void injectSpectrum( Regauss& plugin, int fftIndex, float level, double seconds )
+{
+	if( fftIndex < 0 )
+		return;
+
+	//The kick has to decay to very nearly nothing, and the steady floor under
+	//it has to be low, or the band level never falls back below the trigger
+	//threshold and the coil fires exactly once in the whole run. That is not a
+	//bug in the trigger -- a threshold crossing is a crossing -- but it makes
+	//Trigger Coil and Threshold indistinguishable from each other in the
+	//sweep, which is how it was noticed. Real bass does drop between beats.
+	const float kick = static_cast< float >( std::exp( -6.0 * std::fmod( seconds, 0.5 ) ) );
+
+	for( int i = 0; i < 64; ++i )
+	{
+		const float t = static_cast< float >( i ) / 63.0f;
+
+		//Pink-ish: energy falling with frequency, which is what music does.
+		float value = 0.20f * std::exp( -3.2f * t );
+
+		//The kick, in the woofer's bins only.
+		if( i < 8 )
+			value += kick;
+
+		//A little hiss up top, steady, so the tweeter band is never silent.
+		if( i >= 28 )
+			value += 0.12f;
+
+		plugin.SetParamElementValue( static_cast< unsigned int >( fftIndex ),
+		                             static_cast< unsigned int >( i ),
+		                             std::clamp( value * level, 0.0f, 1.0f ) );
+	}
+}
+
 void usage()
 {
 	std::printf(
@@ -741,6 +791,9 @@ void usage()
 		"  --fps N           frame rate the clock advances at (default 60)\n"
 		"  --set \"Name=V\"    set a parameter by its display name, 0..1\n"
 		"  --degauss T       press the Degauss button T seconds into the run\n"
+		"  --audio L         feed a synthetic spectrum at overall level L (0..1).\n"
+		"                    Without it the Audio controls are correctly dead --\n"
+		"                    the host is the only thing that ever supplies bins.\n"
 		"  --alpha           keep the alpha channel instead of compositing on black\n"
 		"  --flat V          render a uniform field at level V instead of the test card\n"
 		"  --measure         print the mean RGB of the middle of the picture\n"
@@ -770,6 +823,7 @@ int main( int argc, char** argv )
 	bool pipeMode = false;
 	float flatLevel = -1.0f;
 	float degaussAt = -1.0f;
+	float audioLevel = -1.0f;
 	std::string scriptPath;
 	double fps = 60.0;
 	std::vector< std::pair< std::string, float > > overrides;
@@ -797,6 +851,8 @@ int main( int argc, char** argv )
 			fps = std::strtod( next().c_str(), nullptr );
 		else if( arg == "--degauss" )
 			degaussAt = std::strtof( next().c_str(), nullptr );
+		else if( arg == "--audio" )
+			audioLevel = std::strtof( next().c_str(), nullptr );
 		else if( arg == "--alpha" )
 			keepAlpha = true;
 		else if( arg == "--measure" )
@@ -874,6 +930,7 @@ int main( int argc, char** argv )
 	}
 
 	const int degaussIndex = indexOfParameter( "Degauss" );
+	const int audioIndex   = indexOfParameter( "Audio" );
 
 	CGLContextObj context = createContext();
 	if( context == nullptr )
@@ -998,6 +1055,8 @@ int main( int argc, char** argv )
 				                          valueAt( entry.second, static_cast< int >( frame ) ) );
 
 			const double seconds = static_cast< double >( frame ) / fps;
+			if( audioLevel >= 0.0f )
+				injectSpectrum( plugin, audioIndex, audioLevel, seconds );
 			driveTransport( seconds );
 			plugin.SetTime( seconds );
 
@@ -1051,6 +1110,9 @@ int main( int argc, char** argv )
 			plugin.SetFloatParameter( static_cast< unsigned int >( degaussIndex ), 0.0f );
 			pressed = true;
 		}
+
+		if( audioLevel >= 0.0f )
+			injectSpectrum( plugin, audioIndex, audioLevel, seconds );
 
 		driveTransport( seconds );
 		plugin.SetTime( seconds );

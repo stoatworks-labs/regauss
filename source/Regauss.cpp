@@ -34,7 +34,24 @@ const char* const kModeNames[]   = { "Full CRT", "Interference Only" };
 const char* const kLayoutNames[] = { "Speaker Left", "Corner Magnet", "Ring Magnet", "Wandering", "Earth's Field" };
 const char* const kAutoNames[]   = { "Off", "Interval", "Beat", "Bar" };
 
+/// Which driver in the cabinet is leaking. A woofer's field follows the bass
+/// and a tweeter's the treble, so this is a band selector wearing the clothes
+/// of the thing it actually models.
+const char* const kBandNames[] = { "Full Range", "Woofer", "Mid", "Tweeter" };
+
 constexpr int kModeCount = 2;
+constexpr int kBandCount = 4;
+
+/// First and last bin of each band, over the 64 the host delivers. Boundaries
+/// are the usual crossover points of a three-way cabinet rather than equal
+/// thirds: a woofer is done by a few hundred hertz and a tweeter does not
+/// start until a few kHz, so the bass gets far fewer bins than the treble.
+constexpr int kBandRange[ kBandCount ][ 2 ] = {
+	{ 0, 63 }, //Full Range
+	{ 0, 7 },  //Woofer
+	{ 8, 27 }, //Mid
+	{ 28, 63 },//Tweeter
+};
 
 float lerp( float a, float b, float t )
 {
@@ -115,6 +132,12 @@ Regauss::Regauss() :
 	params[ PT_ZOOM ]           = 0.50f;//0.5 is 1:1
 	params[ PT_VIGNETTE ]       = 0.35f;
 
+	params[ PT_AUDIO_DRIVE ]     = 0.0f;//off until somebody routes audio to it
+	params[ PT_AUDIO_BAND ]      = 1.0f;//woofer -- the driver with the big magnet
+	params[ PT_AUDIO_RELEASE ]   = 0.42f;//about 150 ms
+	params[ PT_AUDIO_TRIGGER ]   = 0.0f;
+	params[ PT_AUDIO_THRESHOLD ] = 0.55f;
+
 	params[ PT_PRESET ]         = 0.0f; //Custom: the sliders are the truth
 
 	//---------------------------------------------------------------------
@@ -175,6 +198,26 @@ Regauss::Regauss() :
 	SetParamInfof( PT_ZOOM, "Zoom", FF_TYPE_STANDARD );
 	SetParamInfof( PT_VIGNETTE, "Vignette", FF_TYPE_STANDARD );
 
+	// The spectrum, and what to do with it.
+	//
+	// Declared with a real element list so the host knows how many bins to
+	// fill. Audio Drive defaults to zero: with no audio routed, the controls
+	// sit there doing nothing rather than the picture twitching to a phantom
+	// signal the operator never asked for.
+	SetBufferParamInfo( PT_AUDIO_FFT, "Audio", kAudioBins, FF_USAGE_FFT );
+	for( int i = 0; i < kAudioBins; ++i )
+		SetParamElementInfo( PT_AUDIO_FFT, i, "", 0.0f );
+
+	SetParamInfof( PT_AUDIO_DRIVE, "Audio Drive", FF_TYPE_STANDARD );
+
+	SetOptionParamInfo( PT_AUDIO_BAND, "Band", kBandCount, params[ PT_AUDIO_BAND ] );
+	for( int i = 0; i < kBandCount; ++i )
+		SetParamElementInfo( PT_AUDIO_BAND, i, kBandNames[ i ], static_cast< float >( i ) );
+
+	SetParamInfof( PT_AUDIO_RELEASE, "Release", FF_TYPE_STANDARD );
+	SetParamInfo( PT_AUDIO_TRIGGER, "Trigger Coil", FF_TYPE_BOOLEAN, false );
+	SetParamInfof( PT_AUDIO_THRESHOLD, "Threshold", FF_TYPE_STANDARD );
+
 	// Factory presets. Element 0 is Custom; picking anything else copies that
 	// preset's values into the covered parameters and raises value events so
 	// the host re-reads the sliders. Editing a covered slider flips back to
@@ -204,6 +247,8 @@ Regauss::Regauss() :
 		SetParamGroup( i, "Tube" );
 	for( FFUInt32 i = PT_CURVATURE; i <= PT_VIGNETTE; ++i )
 		SetParamGroup( i, "Geometry" );
+	for( FFUInt32 i = PT_AUDIO_FFT; i <= PT_AUDIO_THRESHOLD; ++i )
+		SetParamGroup( i, "Audio" );
 
 	SetParamGroup( PT_PRESET, "Preset" );
 
@@ -295,6 +340,86 @@ float Regauss::lastTrigger( double now ) const
 	//sequence has to win, or the button would appear dead in exactly the
 	//situation somebody is most likely to reach for it.
 	return static_cast< float >( std::max( scheduled, manualTrigger ) );
+}
+
+//---------------------------------------------------------------------------
+void Regauss::updateAudio( double now )
+{
+	const ParamInfo* info = FindParamInfo( PT_AUDIO_FFT );
+	if( info == nullptr )
+		return;
+
+	//The release filter's own clock, off the same normalised-to-seconds one
+	//everything else runs on -- so the milliseconds-or-seconds question is
+	//already settled by the time it gets here. A clock that has not moved
+	//snaps rather than filtering, which is what the first frame needs.
+	const double dt = ( audioClock >= 0.0 && now > audioClock ) ? now - audioClock : 0.0;
+	audioClock      = now;
+
+	const float releaseSeconds = controls::AudioRelease( params[ PT_AUDIO_RELEASE ] );
+
+	//Fast up, slow down. A field that arrives a frame late reads as broken;
+	//one that takes a moment to die away reads as a room with a speaker in it.
+	//Symmetric smoothing trades the transient for lag, which is worse.
+	const float release = dt > 0.0
+	                          ? 1.0f - std::exp( static_cast< float >( -dt / releaseSeconds ) )
+	                          : 1.0f;
+
+	const size_t bins = std::min< size_t >( info->elements.size(), kAudioBins );
+	for( size_t i = 0; i < bins; ++i )
+	{
+		//sqrt because bin magnitudes bunch hard against zero: a spectrum used
+		//raw moves the picture for the kick drum and for nothing else.
+		const float raw = std::sqrt( std::max( 0.0f, info->elements[ i ].value ) );
+
+		if( raw >= audioBins[ i ] )
+			audioBins[ i ] = raw;
+		else
+			audioBins[ i ] += ( raw - audioBins[ i ] ) * release;
+	}
+
+	//Fold the chosen band down to one number. The mean rather than the peak:
+	//a peak follows whichever bin happens to be loudest and jumps between
+	//them, and the field a speaker leaks is its whole output at once.
+	const int band = std::clamp( static_cast< int >( std::lround( params[ PT_AUDIO_BAND ] ) ), 0, kBandCount - 1 );
+	const int from = kBandRange[ band ][ 0 ];
+	const int to   = std::min( kBandRange[ band ][ 1 ], static_cast< int >( bins ) - 1 );
+
+	float sum = 0.0f;
+	int counted = 0;
+	for( int i = from; i <= to; ++i )
+	{
+		sum += audioBins[ i ];
+		++counted;
+	}
+
+	audioPrevious = audioLevel;
+	audioLevel    = counted > 0 ? std::clamp( sum / static_cast< float >( counted ), 0.0f, 1.0f ) : 0.0f;
+
+	//------------------------------------------------------------------
+	// Fire the coil on a transient.
+	//
+	// A rising crossing of the threshold, not a derivative: a derivative
+	// re-fires all the way up a swell, and the lockout that would be needed to
+	// stop it is doing the same job as the hysteresis this gets for free by
+	// requiring the level to fall back under the line first.
+	//
+	// The lockout is still there, and it is short -- it only stops a signal
+	// sitting exactly on the threshold from firing every frame it dithers
+	// across it.
+	//------------------------------------------------------------------
+	if( params[ PT_AUDIO_TRIGGER ] > 0.5f )
+	{
+		const float threshold = params[ PT_AUDIO_THRESHOLD ];
+		const bool crossed    = audioLevel > threshold && audioPrevious <= threshold;
+		const bool armed      = lastAudioTrigger < 0.0 || ( now - lastAudioTrigger ) > 0.12;
+
+		if( crossed && armed )
+		{
+			manualTrigger    = now;
+			lastAudioTrigger = now;
+		}
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -412,6 +537,10 @@ FFResult Regauss::ProcessOpenGL( ProcessOpenGLStruct* pGL )
 
 	lastNow = now;
 
+	//Before lastTrigger() below, because a transient in the audio can fire the
+	//coil and that has to be visible on this frame rather than the next.
+	updateAudio( now );
+
 	if( ++clockFrames == 60 )
 		diag::info( "host clock at frame 60: raw=" + std::to_string( hostTime )
 		            + " scale=" + std::to_string( clockScale )
@@ -444,6 +573,8 @@ FFResult Regauss::ProcessOpenGL( ProcessOpenGLStruct* pGL )
 	settings.recovery      = params[ PT_RECOVERY ];
 	settings.maskPitch     = params[ PT_MASK_PITCH ];
 	settings.maskPattern   = maskIndex;
+	settings.audioLevel    = audioLevel;
+	settings.audioDrive    = params[ PT_AUDIO_DRIVE ];
 
 	const controls::Drive drive = controls::drive( settings,
 	                                               maskSpec,

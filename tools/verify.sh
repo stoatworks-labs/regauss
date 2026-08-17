@@ -55,6 +55,23 @@ step "no dead controls"
 check python3 tools/sweep.py
 
 # ---------------------------------------------------------------------------
+# The browser demo's shaders.
+#
+# The rest of the fleet's demos carry their GLSL as strings "copied unedited
+# from source/shaders/", and nothing checks that claim. A copy is a copy: the
+# plugin's shader gets a fix, the demo's does not, and the page quietly stops
+# being a demo of the plugin while continuing to look like one.
+#
+# demo/shaders.js is generated instead, and committed — the demo is served as
+# it is, with no build step, and that has to stay true. This is what keeps the
+# committed copy honest.
+# ---------------------------------------------------------------------------
+if [ -f demo/shaders.js ] && command -v node >/dev/null 2>&1; then
+	step "the demo runs the plugin's shaders"
+	check node demo/extract-shaders.mjs --check
+fi
+
+# ---------------------------------------------------------------------------
 # The mask gains.
 #
 # MaskSpec::gain compensates for the light the mask blocks, and it is measured

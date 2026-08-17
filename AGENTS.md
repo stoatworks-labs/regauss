@@ -67,6 +67,16 @@ of the tube, so a vertical error slides the beam along its own stripe and costs
 nothing — a genuine advantage of the design, and it falls out of the table rather
 than being asserted in a shader.
 
+**Audio drives the field, and is added AFTER the coil's envelope.** The default
+layout is a speaker, and a speaker's stray field IS the audio signal — the voice
+coil current is the music and the magnet assembly leaks it. So audio is not a
+separate effect with its own path to the picture; it is another term in the same
+field, and the lean, the fringing and the stain all follow from it unchanged.
+Adding it inside the coil's envelope would be the mistake: degaussing clears
+what the mask has *stored*, and does nothing about the speaker still playing. A
+degauss during a loud passage must clean the mask and let the stain come
+straight back, because that is what would happen in the room.
+
 **Phosphor decay sits AFTER the beam pass.** The phosphor is a coating on the
 glass: it glows where the beam *hit*, not where it was *aimed*. Move persistence
 before the beam pass and a violent degauss reads as a still frame with a wobble
@@ -118,7 +128,7 @@ the stain the right size over somebody else's CRT.
 | `source/shaders/FieldGLSL.cpp` | the GLSL field, shared verbatim by the beam pass and the test probe. |
 | `source/shaders/Beam.cpp` | where the beam lands. The plugin. |
 | `source/shaders/Screen.cpp` | the glass. Bypassed in Interference Only. |
-| `source/Regauss.{h,cpp}` | FFGL host glue, the clock, the trigger schedule. |
+| `source/Regauss.{h,cpp}` | FFGL host glue, the clock, the trigger schedule, the FFT reader. |
 | `source/ofx/RegaussOFX.cpp` | the CPU mirror of the two passes. |
 | `tools/rgtest` | the offline harness and the three maths checks. |
 
@@ -155,6 +165,14 @@ the stain the right size over somebody else's CRT.
   and a 2.4% gain change moved the measured mean by 5.3% in the wrong direction.
 - **Never let `tools/sweep.py` touch the About block.** Those parameters are
   buttons that open a web browser.
+- **The FFT buffer parameter must be skipped by the sweep.** Its single float
+  value is meaningless — the content is 64 elements the host writes — so
+  sweeping it reports a false dead every time.
+- **A synthetic test spectrum must fall back between beats.** The first one here
+  did not: its floor sat just above the trigger threshold, so the coil fired
+  once for the whole run and `Trigger Coil` and `Threshold` produced
+  byte-identical sweep diffs. That identity is the symptom to watch for — the
+  controls both passed.
 
 ## What is genuinely verified, and what is assumed
 
@@ -170,7 +188,10 @@ the stain the right size over somebody else's CRT.
   stated Duration, monotonically decreasing throughout, HT recovering faster than
   the field, and the full loop — magnetised 1.0, down to 0.09 at 0.77 s after the
   button, back to 1.0 over the Recovery time.
-- All 35 parameters change the picture.
+- All 40 parameters change the picture.
+- The audio path, end to end against `rgtest --audio`'s synthetic spectrum: the
+  field pumps with the injected bass, the four bands read different levels, and
+  the coil re-arms and fires once per kick rather than once per session.
 - The four mask gains are within 0.4% of the unmasked reference.
 - The bundle exports `plugMain` and carries `RG01`; the OFX bundle's plist names
   its real binary and ad-hoc signs.
@@ -183,6 +204,10 @@ the stain the right size over somebody else's CRT.
 - Whether Resolume draws `FF_TYPE_EVENT` as a button the way the Degauss control
   assumes, and whether a MIDI or OSC mapping to it produces one rising edge per
   press rather than a stream.
+- Whether Resolume's FFT arrives in the shape the reader assumes. The audio path
+  has only ever seen `rgtest`'s synthetic spectrum: the bin count, the
+  normalisation and whether the magnitudes need the sqrt are all taken from the
+  fleet's other plugins rather than measured here.
 - Whether Beat and Bar lock to a real Resolume transport. The recovery of the
   bar line from `barPhase` is the same arithmetic tinsel and orrery use and that
   *has* been checked live in Arena — but not in this plugin.

@@ -82,6 +82,15 @@ float Overscan( float p )
 	return lerp( 1.0f, 1.15f, clamp01( p ) );
 }
 
+float AudioRelease( float p )
+{
+	//20 ms to a second and a half. The bottom of that range tracks the
+	//waveform closely enough to look like jitter and the top holds through a
+	//whole bar; the useful settings are all in the first third, which is what
+	//the geometric mapping is for.
+	return geometric( p, 0.02f, 1.5f );
+}
+
 //---------------------------------------------------------------------------
 Drive drive( const Settings& s,
              const MaskSpec& mask,
@@ -116,7 +125,18 @@ Drive drive( const Settings& s,
 	                            ? 1.0f
 	                            : 1.0f - std::exp( -sinceTrigger / Recovery( s.recovery ) );
 
-	d.staticAmp = clamp01( s.magnetisation ) * std::max( c.retained, recovered );
+	//------------------------------------------------------------------
+	// What the mask is holding, plus what the speaker is putting out.
+	//
+	// The audio term is added AFTER the coil's envelope rather than inside it,
+	// and that is the physics rather than an ordering convenience. Degaussing
+	// clears the magnetisation the mask has *stored*; it does nothing whatever
+	// about the speaker still sitting beside the set playing the record. So a
+	// degauss during a loud passage cleans the mask and the stain comes
+	// straight back, which is exactly what would happen in the room.
+	//------------------------------------------------------------------
+	d.staticAmp = clamp01( s.magnetisation ) * std::max( c.retained, recovered )
+	              + clamp01( s.audioLevel ) * clamp01( s.audioDrive ) * kAudioScale;
 
 	//The coil's own field is alternating, and so is whatever leaks in from the
 	//room, so they add here and share one oscillator in the shader.

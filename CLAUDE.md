@@ -17,6 +17,8 @@ either shader pass.
 - List parameters: `./build/rgtest --list`
 - Set a control: `--set "Layout=1" --set "Magnetisation=0.9"` (by display name)
 - Fire the coil part way through: `--degauss 0.15 --frames 20`
+- Feed a synthetic spectrum: `--audio 0.9` (without it the Audio group is
+  correctly dead — the host is the only thing that supplies bins)
 - Put real footage through the real shaders:
   `ffmpeg … -f rawvideo -pix_fmt rgba - | ./build/rgtest --pipe --width W --height H [--script cues.txt] | ffmpeg …`
 
@@ -52,6 +54,11 @@ either shader pass.
   integrated along the beam's flight, not the field where it lands.
 - Runs at the composition's resolution, unlike old-cathode. A magnet is a fact
   about the room, not about a broadcast standard.
+- **Audio drives the field, not a separate effect.** The default layout is a
+  speaker, and a speaker's stray field is the audio signal. FFGL only; the OFX
+  `Settings` fields default to zero so the term falls out of `drive()`.
+- The audio term is added AFTER the coil envelope: degaussing clears what the
+  mask stored, not the speaker still playing.
 - Mask gains in `source/Masks.cpp` are **measured** with
   `rgtest --flat 0.30 --measure` — at 0.30, not 0.05; see the note in that file.
 - The vertex shader passes UVs through **unscaled**; MaxUV is applied at the
