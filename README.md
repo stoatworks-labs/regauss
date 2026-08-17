@@ -163,8 +163,9 @@ Run `tools/verify.sh`. What it establishes:
 The OpenFX bundle loads and renders under `ofxprobe`, which is not Resolve. The
 Degauss button assumes Resolume draws an `FF_TYPE_EVENT` as a button and sends
 one rising edge per press; Beat and Bar assume a real transport. The audio path
-has only ever seen `rgtest`'s synthetic spectrum, never Resolume's FFT. Only arm64 has
-been built — not the universal binary, not Windows, not Linux.
+has only ever seen `rgtest`'s synthetic spectrum, never Resolume's FFT. The
+macOS build is universal and verified with `lipo`; nothing has been built on
+Windows or Linux.
 
 ## Licence
 

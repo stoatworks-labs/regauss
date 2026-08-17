@@ -213,5 +213,5 @@ the stain the right size over somebody else's CRT.
   *has* been checked live in Arena — but not in this plugin.
 - Whether Resolume consumes the `FF_EVENT_FLAG_VALUE` events the preset applier
   raises, so the sliders visibly move when a preset is picked.
-- The universal (arm64 + x86_64) build. Only arm64 has been built so far.
-- Nothing has been built on Windows or Linux.
+- Nothing has been built on Windows or Linux. The macOS build IS universal and
+  checked with `lipo` — that one is verified, not assumed.
