@@ -123,6 +123,37 @@ Eight factory presets, from *Speaker Beside It* through *Mains Hum* to *Degauss
 on the Bar*.
 
 <!-- downloads:start -->
+
+## Download
+
+**[v0.1.0](https://github.com/stoatworks-labs/regauss/releases/tag/v0.1.0)** — prebuilt for macOS and Windows. Pick your platform:
+
+<details>
+<summary><b>macOS</b> — Universal (Apple Silicon + Intel)</summary>
+
+| Build | Download | Size |
+| --- | --- | --- |
+| Universal (Apple Silicon + Intel) · .dmg disk image | [`regauss-0.1.0-macos-universal.dmg`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.0/regauss-0.1.0-macos-universal.dmg) | 233 KB |
+| Universal (Apple Silicon + Intel) · .zip archive | [`regauss-macos-universal.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-macos-universal.zip) | 186 KB |
+| Universal (Apple Silicon + Intel) · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`regauss-ofx-macos-universal.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-ofx-macos-universal.zip) | 267 KB |
+
+</details>
+
+<details>
+<summary><b>Windows</b> — x64</summary>
+
+| Build | Download | Size |
+| --- | --- | --- |
+| x64 · .exe installer | [`regauss-0.1.0-windows-x86_64-setup.exe`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.0/regauss-0.1.0-windows-x86_64-setup.exe) | 222 KB |
+| x64 · .zip archive | [`regauss-windows-x86_64.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-windows-x86_64.zip) | 115 KB |
+| x64 · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`regauss-ofx-windows-x86_64.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-ofx-windows-x86_64.zip) | 70 KB |
+
+</details>
+
+All builds, checksums and release notes: [github.com/stoatworks-labs/regauss/releases](https://github.com/stoatworks-labs/regauss/releases).
+
+macOS builds are signed and notarised and open normally. The Windows builds are unsigned, so SmartScreen warns once.
+
 <!-- downloads:end -->
 
 ## Building
