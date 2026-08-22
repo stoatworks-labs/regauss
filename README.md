@@ -130,16 +130,16 @@ on the Bar*.
 
 ## Download
 
-**[v0.1.1](https://github.com/stoatworks-labs/regauss/releases/tag/v0.1.1)** — prebuilt for macOS and Windows. Pick your platform:
+**[v0.1.2](https://github.com/stoatworks-labs/regauss/releases/tag/v0.1.2)** — prebuilt for macOS and Windows. Pick your platform:
 
 <details>
 <summary><b>macOS</b> — Universal (Apple Silicon + Intel)</summary>
 
 | Build | Download | Size |
 | --- | --- | --- |
-| Universal (Apple Silicon + Intel) · .dmg disk image | [`regauss-0.1.1-macos-universal.dmg`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.1/regauss-0.1.1-macos-universal.dmg) | 234 KB |
-| Universal (Apple Silicon + Intel) · .zip archive | [`regauss-macos-universal.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-macos-universal.zip) | 186 KB |
-| Universal (Apple Silicon + Intel) · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`regauss-ofx-macos-universal.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-ofx-macos-universal.zip) | 267 KB |
+| Universal (Apple Silicon + Intel) · .dmg disk image | [`regauss-0.1.2-macos-universal.dmg`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.2/regauss-0.1.2-macos-universal.dmg) | 237 KB |
+| Universal (Apple Silicon + Intel) · .zip archive | [`regauss-macos-universal.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-macos-universal.zip) | 189 KB |
+| Universal (Apple Silicon + Intel) · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`regauss-ofx-macos-universal.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-ofx-macos-universal.zip) | 274 KB |
 
 </details>
 
@@ -148,9 +148,9 @@ on the Bar*.
 
 | Build | Download | Size |
 | --- | --- | --- |
-| x64 · .exe installer | [`regauss-0.1.1-windows-x86_64-setup.exe`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.1/regauss-0.1.1-windows-x86_64-setup.exe) | 223 KB |
-| x64 · .zip archive | [`regauss-windows-x86_64.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-windows-x86_64.zip) | 115 KB |
-| x64 · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`regauss-ofx-windows-x86_64.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-ofx-windows-x86_64.zip) | 70 KB |
+| x64 · .exe installer | [`regauss-0.1.2-windows-x86_64-setup.exe`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.2/regauss-0.1.2-windows-x86_64-setup.exe) | 225 KB |
+| x64 · .zip archive | [`regauss-windows-x86_64.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-windows-x86_64.zip) | 118 KB |
+| x64 · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`regauss-ofx-windows-x86_64.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-ofx-windows-x86_64.zip) | 76 KB |
 
 </details>
 
