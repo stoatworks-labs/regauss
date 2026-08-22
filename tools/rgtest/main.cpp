@@ -1059,6 +1059,7 @@ int main( int argc, char** argv )
 			if( audioLevel >= 0.0f )
 				injectSpectrum( plugin, audioIndex, audioLevel, seconds );
 			driveTransport( seconds );
+			plugin.SetClockScaleForTest( 1.0 );//seconds, said out loud rather than inferred
 			plugin.SetTime( seconds );
 
 			glBindFramebuffer( GL_FRAMEBUFFER, outputFBO );
@@ -1116,6 +1117,7 @@ int main( int argc, char** argv )
 			injectSpectrum( plugin, audioIndex, audioLevel, seconds );
 
 		driveTransport( seconds );
+		plugin.SetClockScaleForTest( 1.0 );//seconds, said out loud rather than inferred
 		plugin.SetTime( seconds );
 
 		glBindFramebuffer( GL_FRAMEBUFFER, outputFBO );

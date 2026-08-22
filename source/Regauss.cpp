@@ -30,6 +30,9 @@ static CFFGLPluginInfo PluginInfo(
 
 namespace
 {
+/// Frames that must agree before the host's clock unit is settled.
+constexpr int kClockVotes = 4;
+
 const char* const kModeNames[]   = { "Full CRT", "Interference Only" };
 const char* const kLayoutNames[] = { "Speaker Left", "Corner Magnet", "Ring Magnet", "Wandering", "Earth's Field" };
 const char* const kAutoNames[]   = { "Off", "Interval", "Beat", "Bar" };
@@ -229,7 +232,7 @@ Regauss::Regauss() :
 
 	// The About block. Inline rather than through a helper: SetParamInfo is
 	// protected on CFFGLPlugin, so nothing outside the class can call it.
-	SetParamInfo( PT_ABOUT_FIRST, "About", FF_TYPE_TEXT, "" );
+	SetParamInfo( PT_ABOUT_FIRST, "About", FF_TYPE_TEXT, stoatworks::about::defaultText() );
 	{
 		FFUInt32 aboutId = PT_ABOUT_FIRST + 1;
 		for( const auto& b : stoatworks::about::buttons() )
@@ -279,19 +282,43 @@ double Regauss::nowSeconds()
 		return std::chrono::duration< double >( elapsed ).count();
 	}
 
-	//Decide the unit from the first plausible frame delta. Until it is
-	//decided, assume seconds; the decision lands within two frames.
-	if( clockScale == 0.0 && lastRawTime >= 0.0 && raw > lastRawTime )
-	{
-		const double d = raw - lastRawTime;
-		if( d >= 0.001 && d <= 0.5 )
-			clockScale = 1.0;
-		else if( d >= 2.0 && d <= 500.0 )
-			clockScale = 0.001;
-	}
-	lastRawTime = raw;
+	//Decide the unit by measuring the host's clock against a real one: the
+	//ratio is ~1 for a seconds host and ~1000 for a milliseconds host, and
+	//nothing plausible sits between. This replaced a guess made from the
+	//magnitude of one frame delta, which decided nothing between 0.5 and 2.0,
+	//could lock to "seconds" off a burst of sub-0.5 ms frames at load, and
+	//assumed seconds while undecided -- precisely the millisecond host's wrong
+	//answer.
+	const double wallNow =
+	    std::chrono::duration< double >( std::chrono::steady_clock::now() - startTime ).count();
 
-	return raw * ( clockScale == 0.0 ? 1.0 : clockScale );
+	if( clockScale == 0.0 && lastRawTime >= 0.0 && lastWallTime >= 0.0 )
+	{
+		const double hostDelta = raw - lastRawTime;
+		const double wallDelta = wallNow - lastWallTime;
+
+		//A paused host, a looping clip or a stalled frame tells us nothing.
+		if( hostDelta > 0.0 && wallDelta >= 0.0005 )
+		{
+			const double ratio = hostDelta / wallDelta;
+			if( ratio > 0.1 && ratio < 10.0 )
+				++secondsVotes;
+			else if( ratio > 100.0 && ratio < 10000.0 )
+				++millisVotes;
+
+			//Several frames rather than one, so a single odd frame cannot
+			//decide it alone.
+			if( secondsVotes >= kClockVotes || millisVotes >= kClockVotes )
+				clockScale = millisVotes > secondsVotes ? 0.001 : 1.0;
+		}
+	}
+	lastRawTime  = raw;
+	lastWallTime = wallNow;
+
+	//Until the unit is settled, run on the real clock rather than assume one:
+	//wrong in origin but right in rate, where assuming seconds would be a
+	//thousand times fast on Resolume.
+	return clockScale != 0.0 ? raw * clockScale : wallNow;
 }
 
 float Regauss::lastTrigger( double now ) const
@@ -924,4 +951,9 @@ char* Regauss::GetTextParameter( unsigned int index )
 	}
 
 	return CFFGLPlugin::GetTextParameter( index );
+}
+
+void Regauss::SetClockScaleForTest( double scale )
+{
+	clockScale = scale;
 }
