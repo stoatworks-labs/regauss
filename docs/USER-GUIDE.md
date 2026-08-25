@@ -57,6 +57,7 @@ Copy `Regauss.ofx.bundle` from the `-ofx-` download into the OpenFX folder and r
 ```
 macOS    /Library/OFX/Plugins/
 Windows  C:\Program Files\Common Files\OFX\Plugins\
+Linux    /usr/OFX/Plugins/
 ```
 
 The OFX build has **no Audio group**, and that is not an omission — an OFX host delivers no
