@@ -219,8 +219,16 @@ and whether the magnitudes need the sqrt are taken from the fleet's other
 plugins rather than measured here. Whether Resolume redraws the sliders when a
 preset is picked is unknown. It has not been run in a live show. The OpenFX
 bundle loads and renders under `ofxprobe`, which is not Resolve. The macOS
-build is universal and verified with `lipo`; nothing has been built on Windows
-or Linux.
+build is universal and verified with `lipo`.
+
+Windows and Linux are built, and neither has been run by a person. The release
+workflow builds the FFGL DLL on `windows-latest` with GLEW from vcpkg, packages
+an NSIS installer, and ships both alongside the Windows OpenFX bundle; nobody
+has loaded any of them into a Windows host. The Linux OpenFX bundle is built in
+an `almalinux:8` container for the glibc 2.28 floor Resolve's supported Rocky 8
+needs, and a separate job `dlopen`s the shipped `.ofx` in `rockylinux:8` and
+calls the two entry points a host calls first. That is a load, not a render, and
+nothing there stands in for Resolve.
 
 ## Licence
 
