@@ -130,14 +130,14 @@ on the Bar*.
 
 ## Download
 
-**[v0.1.3](https://github.com/stoatworks-labs/regauss/releases/tag/v0.1.3)** — prebuilt for macOS, Windows and Linux. Pick your platform:
+**[v0.1.4](https://github.com/stoatworks-labs/regauss/releases/tag/v0.1.4)** — prebuilt for macOS, Windows and Linux. Pick your platform:
 
 <details>
 <summary><b>macOS</b> — Universal (Apple Silicon + Intel)</summary>
 
 | Build | Download | Size |
 | --- | --- | --- |
-| Universal (Apple Silicon + Intel) · .dmg disk image | [`regauss-0.1.3-macos-universal.dmg`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.3/regauss-0.1.3-macos-universal.dmg) | 227 KB |
+| Universal (Apple Silicon + Intel) · .dmg disk image | [`regauss-0.1.4-macos-universal.dmg`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.4/regauss-0.1.4-macos-universal.dmg) | 228 KB |
 | Universal (Apple Silicon + Intel) · .zip archive | [`regauss-macos-universal.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-macos-universal.zip) | 189 KB |
 | Universal (Apple Silicon + Intel) · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`regauss-ofx-macos-universal.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-ofx-macos-universal.zip) | 274 KB |
 
@@ -148,7 +148,7 @@ on the Bar*.
 
 | Build | Download | Size |
 | --- | --- | --- |
-| x64 · .exe installer | [`regauss-0.1.3-windows-x86_64-setup.exe`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.3/regauss-0.1.3-windows-x86_64-setup.exe) | 225 KB |
+| x64 · .exe installer | [`regauss-0.1.4-windows-x86_64-setup.exe`](https://github.com/stoatworks-labs/regauss/releases/download/v0.1.4/regauss-0.1.4-windows-x86_64-setup.exe) | 226 KB |
 | x64 · .zip archive | [`regauss-windows-x86_64.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-windows-x86_64.zip) | 118 KB |
 | x64 · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`regauss-ofx-windows-x86_64.zip`](https://github.com/stoatworks-labs/regauss/releases/latest/download/regauss-ofx-windows-x86_64.zip) | 76 KB |
 
