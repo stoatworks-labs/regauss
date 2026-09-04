@@ -24,7 +24,7 @@ static CFFGLPluginInfo PluginInfo(
 	1,                                                           // Plugin major version number
 	0,                                                           // Plugin minor version number
 	FF_EFFECT,                                                   // Plugin type
-	"Magnetic interference on a CRT, and the coil that clears it",// Plugin description
+	"Electromagnetic interference on a CRT, and the coil that clears it.\n\nA colour tube paints its picture by steering three electron beams with a magnetic field. Put another magnetic field near it and the beams go somewhere else.\n\nFour passes all read that one field. The displacement is the geometry error; the difference between the three guns' displacements is the convergence error; the same displacement in shadow-mask pitches is the purity error. One field, three faults.\n\nThe phosphor sits after the beam, because it is on the glass: a picture being shaken smears where the light landed rather than where it was meant to.\n\nStart from a Preset, at the bottom.",// Plugin description
 	"(re)gauss FFGL effect"                                      // About
 );
 
