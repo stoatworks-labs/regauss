@@ -18,7 +18,7 @@ using namespace regauss;
 static CFFGLPluginInfo PluginInfo(
 	PluginFactory< Regauss >,                                    // Create method
 	"RG01",                                                      // Plugin unique ID of maximum length 4.
-	"(re)gauss",                                                 // Plugin name
+	"SW (re)gauss",                                              // Plugin name
 	2,                                                           // API major version number
 	1,                                                           // API minor version number
 	1,                                                           // Plugin major version number
