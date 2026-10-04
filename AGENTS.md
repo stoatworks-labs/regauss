@@ -202,6 +202,21 @@ the stain the right size over somebody else's CRT.
   and in General; and a host that reports a rate gets exactly the output it got
   before.
 
+- **Declare the output frame-varying, or Fusion repeats a generator's first frame.**
+  `getClipPreferences` calls `setOutputFrameVarying( true )`. Wander, Interference
+  and the Auto degauss schedule run off the frame's time. Without that declaration a
+  host may treat the output as fixed while the inputs and parameters hold still.
+  Measured 2026-10-04 in Resolve Studio 21.1's Fusion page: every fleet generator
+  rendered frames 20-22 byte-identical, none having declared it, and with the
+  declaration they animate.
+
+  A tool fed by a MediaIn is re-rendered every frame either way, so in Fusion this
+  changes nothing visible; the declaration is still the correct one, and other hosts
+  (Nuke, Natron) cache by it.
+
+  The flag changes no pixels: `ofxprobe` renders byte-identical with and without it,
+  on a moving sequence, on a still and under `--quirks fusion`.
+
 ## What is genuinely verified, and what is assumed
 
 **Verified, by `tools/verify.sh`:**
