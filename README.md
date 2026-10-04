@@ -182,12 +182,12 @@ cmake --install build     # into ~/Documents/Resolume Arena/Extra Effects
 The OpenFX bundle is built alongside as `build/Regauss.ofx.bundle`; copy it into
 `/Library/OFX/Plugins` for Resolve. `-DBUILD_OFX=OFF` skips it.
 
-**Fusion reports no frame rate; there, time-based controls assume 24 fps.**
-Resolve's Fusion page gives an OpenFX plugin no frame rate at all, and the first
-OpenFX builds failed every render there. Now (re)gauss falls back to 24, Resolve's
-default timeline rate, so in Fusion Wander, Interference and the Auto degauss
-schedule run as if the composition were 24 fps whatever its real rate. A host that
-reports a rate, Resolve's Edit page included, gets its own.
+**Resolve's Fusion page reports the frame rate on the effect but not on its clips.**
+The first OpenFX builds read a clip's rate, which Fusion leaves out, and failed
+every render there. Now (re)gauss asks the output clip, the source clip and then the
+effect, so in Fusion Wander, Interference and the Auto degauss schedule run at the
+timeline's own rate (checked at 24 and 25 fps). It assumes 24 fps, Resolve's default
+timeline rate, only where a host reports no rate at all.
 
 See [`CLAUDE.md`](CLAUDE.md) for the full command reference and
 [`AGENTS.md`](AGENTS.md) for the mental model and the traps.

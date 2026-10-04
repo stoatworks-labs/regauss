@@ -65,7 +65,9 @@ constexpr const char* kPluginDescription =
 	"mask's magnetisation down with it, so firing it genuinely clears what "
 	"has built up -- and the picture swells and dims while the coil loads the "
 	"HT, the way a real set does.\n\n"
-	"Fusion reports no frame rate; there, time-based controls assume 24 fps.\n\n"
+	"Resolve's Fusion page reports the frame rate on the effect but not on its "
+	"clips; the plugin reads the effect's, and assumes 24 fps only where a host "
+	"reports none.\n\n"
 	"https://stoatworks-labs.com";
 
 //---------------------------------------------------------------------------
@@ -673,17 +675,17 @@ private:
 	}
 };
 
-/// The frame rate when the host reports none: 24, Resolve's default timeline
-/// rate. Resolve's Fusion page reports no frame rate anywhere.
+/// The frame rate when the host reports none anywhere: 24, Resolve's default
+/// timeline rate.
 constexpr double kFallbackFrameRate = 24.0;
 
 /// OFX time is in frames. This is the first positive, finite frame rate the
 /// host gives -- the output clip's, the source clip's, the effect's -- else
 /// kFallbackFrameRate. Each read is its own try: Resolve's Fusion page gives
-/// kOfxImageEffectPropFrameRate on neither the effect nor any clip, the
-/// Support library throws on a property the host lacks, and a throw out of
-/// render fails the render -- in Fusion, a composition that "could not be
-/// processed successfully".
+/// kOfxImageEffectPropFrameRate on the effect but on no clip, the Support
+/// library throws on a property the host lacks, and a throw out of render
+/// fails the render -- in Fusion, a composition that "could not be processed
+/// successfully". There the effect's rate, the timeline's, is the one used.
 double framesPerSecond( const OFX::ImageEffect& effect, const OFX::Clip* output, const OFX::Clip* source )
 {
 	const auto usable = []( double rate ) { return std::isfinite( rate ) && rate > 0.0; };
@@ -830,8 +832,7 @@ void RegaussPlugin::render( const OFX::RenderArguments& args )
 	// FFGL is handed a clock; here the frame number and the frame rate are
 	// the clock, which is better -- a frame renders identically however the
 	// host reached it, so a scrub and a playthrough agree. A host that gives
-	// no frame rate -- Resolve's Fusion page -- runs at 24; see
-	// framesPerSecond.
+	// no frame rate anywhere runs at 24; see framesPerSecond.
 	//------------------------------------------------------------------
 	const double fps     = framesPerSecond( *this, dstClip, srcClip );
 	const double seconds = t / fps;
