@@ -253,8 +253,11 @@ from running the host, not from a harness):
 
 **Assumed, and not yet checked:**
 
-- **It has never been run in a live show**, and the OpenFX build has never been
-  loaded into Resolve. `ofxprobe` loads and renders it, which is not Resolve.
+- **It has never been run in a live show**, and the OpenFX build has only been
+  run on Resolve's Fusion page: from v0.1.7 (the frame-rate guard) it renders
+  there as a tool, MediaIn → (re)gauss → MediaOut, in DaVinci Resolve Studio
+  21.1 on macOS (2026-10-04). Never on Resolve's other pages, in Nuke, Natron
+  or Vegas.
 - Whether Resolume's FFT arrives in the shape the reader assumes. The audio path
   has only ever seen `rgtest`'s synthetic spectrum: the bin count, the
   normalisation and whether the magnitudes need the sqrt are all taken from the

@@ -9,7 +9,8 @@
 > demagnetise the mask and let it recover (see [Status](#status)). It **has been
 > loaded into Resolume Arena** and renders there, and the Degauss button fires
 > once per press as intended — but it has **never been run in a live show**, and
-> the OpenFX build has never been loaded into Resolve. Check it in your own rig
+> the OpenFX build has only been run as a tool on Resolve's Fusion page (from
+> v0.1.7, which fixed every render failing there). Check it in your own rig
 > before trusting it in front of an audience.
 
 Electromagnetic interference on a CRT, and the coil that clears it, as an FFGL
@@ -225,8 +226,10 @@ seen `rgtest`'s synthetic spectrum, never Resolume's own FFT, so the bin count
 and whether the magnitudes need the sqrt are taken from the fleet's other
 plugins rather than measured here. Whether Resolume redraws the sliders when a
 preset is picked is unknown. It has not been run in a live show. The OpenFX
-bundle loads and renders under `ofxprobe`, which is not Resolve. The macOS
-build is universal and verified with `lipo`.
+bundle renders as a tool on Resolve's Fusion page (DaVinci Resolve Studio 21.1
+on macOS, MediaIn → (re)gauss → MediaOut, 2026-10-04) from v0.1.7, which fixed
+every render failing there; it has never been run on Resolve's other pages, in
+Nuke, Natron or Vegas. The macOS build is universal and verified with `lipo`.
 
 Windows and Linux are built, and neither has been run by a person. The release
 workflow builds the FFGL DLL on `windows-latest` with GLEW from vcpkg, packages

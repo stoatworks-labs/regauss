@@ -27,8 +27,9 @@ phosphor width lands the red gun squarely on the green stripe.
 > as intended. Still open: Beat and Bar assume Resolume's transport and have never been checked
 > against real music; the audio path has only ever seen synthetic spectra, never Resolume's own
 > FFT; the Windows build comes from CI and has never been loaded into Resolume on Windows; the
-> OpenFX bundle loads under a test host, which is not Resolve; and none of it has been run in a
-> live show. Try it on a spare layer first.
+> OpenFX build renders as a tool on Resolve's Fusion page from v0.1.7, which fixed every render
+> failing there, but has never been run on Resolve's other pages, in Nuke, Natron or Vegas; and
+> none of it has been run in a live show. Try it on a spare layer first.
 >
 > This codebase was created with AI assistance, directed and reviewed by a human author.
 
