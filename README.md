@@ -1,20 +1,20 @@
 # (re)gauss
 
 > **AI-assisted project.** This codebase was created with [Claude](https://claude.com/claude-code)
-> (Anthropic), directed and reviewed by a human author. The physics is verified
+> (Anthropic), directed and reviewed by a human author. The physics is checked
 > numerically by an offline harness that drives the real plugin class in a
-> headless GL context: the GLSL field is compared against the C++ field it is
-> supposed to mirror, the purity model is checked for identity at rest and a
-> clean rotation at one phosphor, and the degauss coil is checked to actually
+> headless GL context: the GLSL field is compared against the C++ field it's
+> meant to mirror, the purity model is checked for identity at rest and a clean
+> rotation at one phosphor, and the degauss coil is checked to actually
 > demagnetise the mask and let it recover (see [Status](#status)). It **has been
 > loaded into Resolume Arena** and renders there, and the Degauss button fires
-> once per press as intended — but it has **never been run in a live show**, and
+> once per press as intended, but it's **never been run in a live show**, and
 > the OpenFX build has only been run as a tool on Resolve's Fusion page (from
 > v0.1.7, which fixed every render failing there). Check it in your own rig
-> before trusting it in front of an audience.
+> before you trust it in front of an audience.
 
 Electromagnetic interference on a CRT, and the coil that clears it, as an FFGL
-effect for [Resolume](https://resolume.com) Arena and Avenue — and the same
+effect for [Resolume](https://resolume.com) Arena and Avenue, and the same
 thing again as an OpenFX plugin for Resolve, Nuke, Natron and Vegas.
 
 **Video:** [What it does, in 40 seconds](https://www.youtube.com/watch?v=p3-tEdHAAlc)
@@ -22,7 +22,7 @@ thing again as an OpenFX plugin for Resolve, Nuke, Natron and Vegas.
 ![A CRT mid-degauss: the picture swollen and dimmed, the raster skewed, colours rotated off their phosphors](docs/hero.png)
 
 <sub>Half a second into a degauss. The coil has pulled the HT down, so the
-picture has dimmed and *swelled* — slower electrons are bent further by the same
+picture has dimmed and *swelled*: slower electrons are bent further by the same
 yoke current. Rendered by `rgtest`, the offline harness.</sub>
 
 ## The idea
@@ -31,50 +31,50 @@ A colour CRT paints its picture by steering three electron beams with a magnetic
 field. Put another magnetic field anywhere near it and the beams go somewhere
 else.
 
-That is the whole plugin: **one vector field over the tube's face, read once per
+That's the whole plugin: **one vector field over the tube's face, read once per
 gun.** Three things everybody recognises fall out of it, and none of them is
 drawn:
 
-- **The picture leans and bulges** — the field's strength.
-- **Every edge grows coloured fringes** — the field's *gradient*. The three
+- **The picture leans and bulges**: the field's strength.
+- **Every edge grows coloured fringes**: the field's *gradient*. The three
   cathodes sit in different places, so the three beams fly different paths and
   see different fields. A uniform field displaces all three equally and fringes
-  nothing, which is exactly what the Earth's field does to a set somebody has
+  nothing, which is just what the Earth's field does to a set somebody has
   turned to face a different wall. A fridge magnet on the glass fringes savagely.
-- **Whole regions turn the wrong colour** — the field measured in shadow-mask
+- **Whole regions turn the wrong colour**: the field measured in shadow-mask
   pitches. Displace a beam by one whole phosphor width and the gun meant for the
-  red stripe lands squarely on the green one. That is why a magnetised corner
-  goes green rather than merely dim.
+  red stripe lands squarely on the green one. That's why a magnetised corner
+  goes green rather than just dim.
 
 ## The button
 
-**Degauss** is not an animation played over the top. It fires a decaying
-alternating field — a real automatic degausser is a coil in series with a PTC
+**Degauss** isn't an animation played over the top. It fires a decaying
+alternating field (a real automatic degausser is a coil in series with a PTC
 thermistor, which is why the field dies away over a second or two rather than
-switching off — and the mask's own magnetisation is walked down by *the same
-envelope*. The decay is not decoration: demagnetising works because the applied
+switching off), and the mask's own magnetisation is walked down by *the same
+envelope*. The decay isn't decoration: demagnetising works because the applied
 field passes through every amplitude on its way to zero.
 
-So pressing it genuinely clears the state the plugin has accumulated. The picture
+So pressing it really does clear the state the plugin has built up. The picture
 is thrown about, dims and swells while the coil loads the HT, and then the set is
-clean until it magnetises again over the **Recovery** time. That loop —
-stain builds, degauss, clean, stain builds — is the reason it is a performance
-tool and not a filter.
+clean until it magnetises again over the **Recovery** time. That loop (stain
+builds, degauss, clean, stain builds) is why it's a performance tool rather than
+a filter.
 
 It can also fire itself: on an **interval**, or on the **beat** or the **bar** of
 Resolume's transport.
 
 ## Audio
 
-The default layout is *Speaker Left* — an unshielded speaker beside the set.
-A speaker's stray field is not *like* the audio signal; it **is** the audio
+The default layout is *Speaker Left*: an unshielded speaker beside the set.
+A speaker's stray field isn't *like* the audio signal; it **is** the audio
 signal, because the voice coil current is the music and the magnet assembly
 leaks it.
 
-So the audio does not drive a new effect. It drives the field that was already
-there, and everything downstream of the field — the lean, the fringing, the
-colour stain — follows on its own. **Band** is worded as which driver in the
-cabinet is leaking, because that is what it is: a woofer leaks the bass, a
+So the audio doesn't drive a new effect. It drives the field that was already
+there, and everything downstream of the field (the lean, the fringing, the
+colour stain) follows on its own. **Band** is worded as which driver in the
+cabinet is leaking, because that's what it is: a woofer leaks the bass, a
 tweeter the treble.
 
 | Control | |
@@ -84,18 +84,18 @@ tweeter the treble.
 | **Release** | How fast the field falls back after a peak. Instant attack, 20 ms to 1.5 s release. |
 | **Trigger Coil** | Fire the degauss on a transient, with a **Threshold**. |
 
-One consequence worth knowing, and it is the physics rather than a limitation:
-**degaussing does not stop the audio stain.** The coil clears what the mask has
+One consequence worth knowing, and it's the physics rather than a limitation:
+**degaussing doesn't stop the audio stain.** The coil clears what the mask has
 *stored*; it does nothing about the speaker still sitting there playing the
 record. Degauss during a loud passage and the stain comes straight back.
 
-FFGL only — an OFX host delivers no spectrum, so the OpenFX build simply does
-not offer the group.
+FFGL only: an OFX host delivers no spectrum, so the OpenFX build doesn't offer
+the group at all.
 
 ## Stacking on old-cathode
 
 Set **Render** to *Interference Only* and (re)gauss applies the magnet and the
-coil with no television of its own — for layering over
+coil with no television of its own, for layering over
 [old-cathode](https://github.com/stoatworks-labs/old-cathode) or over somebody's
 real CRT footage. Two shadow masks in a chain is a moiré generator and two sets
 of curvature is a fisheye.
@@ -117,12 +117,12 @@ whatever tube is underneath.
 | **Audio** | Audio Drive, Band, Release, and an optional coil trigger. See [Audio](#audio). |
 
 **Deflection and Purity are separate on purpose.** On a real tube, how far a
-field bends the beam is set by the yoke and the anode voltage; how much colour
+field bends the beam is set by the yoke and the anode voltage, and how much colour
 error that bend causes is set by the mask pitch and the gun-to-mask distance.
-Different hardware — and their real ratio means a magnet far too weak to move the
-geometry visibly will still rotate the colours completely. That is the commonest
-real purity fault there is, and one control derived from the other could not
-reach it.
+That's different hardware, and their real ratio means a magnet far too weak to
+move the geometry visibly will still rotate the colours completely. It's the
+commonest real purity fault there is, and one control derived from the other
+couldn't reach it.
 
 Eight factory presets, from *Speaker Beside It* through *Mains Hum* to *Degauss
 on the Bar*.
@@ -187,8 +187,8 @@ The OpenFX bundle is built alongside as `build/Regauss.ofx.bundle`; copy it into
 The first OpenFX builds read a clip's rate, which Fusion leaves out, and failed
 every render there. Now (re)gauss asks the output clip, the source clip and then the
 effect, so in Fusion Wander, Interference and the Auto degauss schedule run at the
-timeline's own rate (checked at 24 and 25 fps). It assumes 24 fps, Resolve's default
-timeline rate, only where a host reports no rate at all.
+timeline's own rate (checked at 24 and 25 fps). It only assumes 24 fps, Resolve's
+default timeline rate, where a host reports no rate at all.
 
 See [`CLAUDE.md`](CLAUDE.md) for the full command reference and
 [`AGENTS.md`](AGENTS.md) for the mental model and the traps.
@@ -196,11 +196,11 @@ First run on macOS or Windows: [`docs/UNSIGNED.md`](docs/UNSIGNED.md).
 
 ## Status
 
-Run `tools/verify.sh`. What it establishes:
+Run `tools/verify.sh`. Here's what it shows:
 
 - The GLSL field matches the C++ field to under 1e-6 relative across all five
   layouts, including seeded and drifting ones. The probe is assembled from *the
-  same strings* the beam pass uses, so it is not checking a copy.
+  same strings* the beam pass uses, so it isn't checking a copy.
 - The purity model is the identity at zero field, rotates cleanly at one whole
   phosphor, wraps at a full triad, conserves light from −3 to +3 phosphors,
   produces no purity error on a maskless tube, and produces no *vertical* purity
@@ -216,16 +216,16 @@ Run `tools/verify.sh`. What it establishes:
   re-arms and fires per kick rather than once.
 
 **Confirmed in the host:** it loads into Resolume Arena and renders, and the
-Degauss button behaves — Resolume draws the `FF_TYPE_EVENT` as a button and
+Degauss button behaves: Resolume draws the `FF_TYPE_EVENT` as a button and
 sends one rising edge per press, so the coil fires once per click rather than
 twice or continuously.
 
-**What is still not established:** Beat and Bar assume Resolume's transport,
-and that has not been checked against real music. The audio path has only ever
+**What's still not established:** Beat and Bar assume Resolume's transport,
+and that hasn't been checked against real music. The audio path has only ever
 seen `rgtest`'s synthetic spectrum, never Resolume's own FFT, so the bin count
 and whether the magnitudes need the sqrt are taken from the fleet's other
-plugins rather than measured here. Whether Resolume redraws the sliders when a
-preset is picked is unknown. It has not been run in a live show. The OpenFX
+plugins rather than measured here. I don't know whether Resolume redraws the
+sliders when a preset is picked. It hasn't been run in a live show. The OpenFX
 bundle renders as a tool on Resolve's Fusion page (DaVinci Resolve Studio 21.1
 on macOS, MediaIn → (re)gauss → MediaOut, 2026-10-04) from v0.1.7, which fixed
 every render failing there; it has never been run on Resolve's other pages, in
@@ -237,7 +237,7 @@ an NSIS installer, and ships both alongside the Windows OpenFX bundle; nobody
 has loaded any of them into a Windows host. The Linux OpenFX bundle is built in
 an `almalinux:8` container for the glibc 2.28 floor Resolve's supported Rocky 8
 needs, and a separate job `dlopen`s the shipped `.ofx` in `rockylinux:8` and
-calls the two entry points a host calls first. That is a load, not a render, and
+calls the two entry points a host calls first. That's a load, not a render, and
 nothing there stands in for Resolve.
 
 ## Licence
