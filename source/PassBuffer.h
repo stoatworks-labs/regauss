@@ -7,7 +7,7 @@ namespace regauss
 /**
     An off-screen buffer for one stage of the chain.
 
-    Two things on top of the SDK's FFGLFBO.
+    Three things on top of the SDK's FFGLFBO.
 
     **It reallocates only when it has to.** Every buffer here is sized by the
     composition -- a magnetic field is a fact about the room rather than about
@@ -23,6 +23,12 @@ namespace regauss
     every buffer whenever the composition size changes, and somebody dragging a
     resolution slider about should not be paying megabytes of texture memory
     for each position it passes through.
+
+    **It has no depth buffer.** `FFGLFBO::Initialise()` always attaches a
+    24-bit depth renderbuffer the size of the picture, and nothing here draws
+    with depth: at 4K that is about 32 MB a buffer for nothing. Ensure()
+    allocates through InitialiseColourOnly() instead, the same steps with the
+    colour texture alone.
 */
 class PassBuffer : public ffglex::FFGLFBO
 {
@@ -41,6 +47,12 @@ public:
 	{
 		return GetGLID() != 0;
 	}
+
+private:
+	/// FFGLFBO::Initialise() less the depth renderbuffer: the framebuffer, the
+	/// colour texture and its attachment, and everything released again if
+	/// the framebuffer is not complete.
+	bool InitialiseColourOnly( GLsizei requestedWidth, GLsizei requestedHeight, GLint format );
 };
 
 } // namespace regauss
